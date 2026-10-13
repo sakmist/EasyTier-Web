@@ -1,0 +1,12 @@
+.git
+.gitignore
+.github
+_src
+.probe
+data
+docs
+fnos
+scripts
+*.md
+LICENSE
+docker-compose*.yml

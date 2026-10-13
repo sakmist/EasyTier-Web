@@ -1,0 +1,22 @@
+EasyTier-Web - Docker packaging
+===============================
+
+This repository contains Docker packaging (Dockerfile, entrypoint, compose
+files, scripts, documentation) around the EasyTier binaries. The packaging
+itself is provided as-is, without warranty of any kind.
+
+Bundled third-party software
+----------------------------
+
+app/server/easytier-core
+app/server/easytier-web-embed
+
+are prebuilt binaries of EasyTier, version 2.4.5, taken unmodified from the
+fnOS package at https://github.com/FNOSP/App.Bin.EasyTier-Web .
+
+EasyTier is Copyright (C) its authors and is licensed under the
+GNU Lesser General Public License v3.0 (LGPL-3.0).
+See https://github.com/EasyTier/EasyTier for the full license text and
+corresponding source code.
+
+The original fnOS package sources are kept under fnos/ for reference.

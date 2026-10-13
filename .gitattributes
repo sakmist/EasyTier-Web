@@ -1,0 +1,17 @@
+# Shell scripts and container files must keep LF endings: CRLF breaks the
+# entrypoint inside the Linux container.
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+.dockerignore   text eol=lf
+.gitignore      text eol=lf
+.gitattributes  text eol=lf
+*.json          text eol=lf
+*.md            text eol=lf
+
+# Vendored Linux binaries and images are not text.
+app/server/easytier-core       binary
+app/server/easytier-web-embed  binary
+*.png                          binary
+*.PNG                          binary

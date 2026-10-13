@@ -1,0 +1,47 @@
+# EasyTier-Web - single container running the web dashboard and EasyTier core.
+#
+# Host networking is the default because EasyTier needs to create a TUN device,
+# install routes and do UDP NAT traversal - all of which work reliably only when
+# the container shares the host network namespace. With host networking the web
+# dashboard is reachable at http://<nas-ip>:11211 (or whatever "uiport" is set to
+# in ./data/config.json).
+#
+# If you must use bridge networking instead, see docker-compose.bridge.yml.
+
+services:
+  easytier-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: easytier-web:2.4.5
+    container_name: easytier-web
+    hostname: easytier-web
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN   # create TUN device, add routes
+      - NET_RAW     # UDP hole punching
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TZ: Asia/Shanghai
+      # UIPORT: "11211"            # overrides "uiport" in ./data/config.json
+      # CONFIG_SERVER_PORT: "22020"
+      # NO_TUN: "1"                # run easytier-core without a TUN device
+      # ET_CORE_EXTRA_ARGS: "--network-name mynet --network-secret mysecret"
+    volumes:
+      - ./data:/data
+      # Stable machine id, used by EasyTier for config recovery. Comment this
+      # out if the host has no /etc/machine-id.
+      - /etc/machine-id:/etc/machine-id:ro
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

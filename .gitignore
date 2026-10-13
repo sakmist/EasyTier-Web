@@ -1,0 +1,13 @@
+# Runtime state: sqlite db, config.json, logs
+/data/
+
+# Local scratch / reference checkout
+/_src/
+/.probe/
+
+# Build output (image tarballs for offline transfer)
+/dist/
+
+# OS noise
+.DS_Store
+Thumbs.db

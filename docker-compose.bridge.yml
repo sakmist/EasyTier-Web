@@ -1,0 +1,47 @@
+# EasyTier-Web - bridge-network alternative to docker-compose.yml.
+#
+# Use this only when you cannot use host networking (for example when 1Panel or
+# another panel insists on managing port mappings). Bridge mode still needs
+# NET_ADMIN and /dev/net/tun to create the TUN device, and the host cannot reach
+# VPN peers through the container automatically, so the recommended setup here is
+# NO_TUN=1 combined with EasyTier's subnet proxy.
+#
+# With bridge networking the web dashboard is published on the host port below,
+# so reach it at http://<nas-ip>:11211.
+
+services:
+  easytier-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: easytier-web:2.4.5
+    container_name: easytier-web
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - "11211:11211"        # web dashboard / REST API
+      - "11010:11010/tcp"    # EasyTier listener (tcp)
+      - "11010:11010/udp"    # EasyTier listener (udp)
+      - "11011:11011/tcp"    # ws / wireguard
+      - "11011:11011/udp"
+    environment:
+      TZ: Asia/Shanghai
+      NO_TUN: "1"
+      # UIPORT: "11211"
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
