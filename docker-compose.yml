@@ -28,6 +28,8 @@ services:
       # UIPORT: "11211"            # overrides "uiport" in ./data/config.json
       # CONFIG_SERVER_PORT: "22020"
       # NO_TUN: "1"                # run easytier-core without a TUN device
+      # API_HOST: "http://192.168.1.12:11211"   # what the browser should talk to
+      # AUTO_API_HOST: "0"         # disable auto-detection of API_HOST
       # ET_CORE_EXTRA_ARGS: "--network-name mynet --network-secret mysecret"
     volumes:
       - ./data:/data

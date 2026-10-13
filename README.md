@@ -27,9 +27,11 @@ cd EasyTier-Web
 docker compose up -d --build
 ```
 
-浏览器打开 `http://<主机IP>:11211`，初始用户名和密码都是 **admin**。
+浏览器打开 `http://<主机IP>:11211`，初始用户名和密码都是 **admin**，登录后即可在左侧
+「设备列表」里添加网络。
 
-> API 主机填 `http://<主机IP>:11211`(即页面自身的地址)。
+> 页面里的「API 主机」会自动指向本容器，无需手动填写。若显示的是
+> `config-server.easytier.cn`，说明自动探测没生效，见下方「关于『API 主机』」。
 
 ### 方式二: docker run
 
@@ -100,8 +102,19 @@ Web 端口有两种改法，优先级从高到低:
 | `UIPORT` | (空) | Web/API 端口，覆盖 `config.json` |
 | `CONFIG_SERVER_PORT` | `22020` | web 与 core 之间的配置下发端口 |
 | `NO_TUN` | `0` | 设为 `1` 时 core 不创建 TUN 设备 |
+| `API_HOST` | 自动检测 | 页面里「API 主机」指向的地址，如 `http://192.168.1.12:11211` |
+| `AUTO_API_HOST` | `1` | 设为 `0` 关闭 `API_HOST` 自动检测 |
 | `ET_CORE_EXTRA_ARGS` | (空) | 追加给 `easytier-core` 的参数 |
 | `ET_WEB_EXTRA_ARGS` | (空) | 追加给 `easytier-web-embed` 的参数 |
+
+### 关于「API 主机」
+
+原 fnOS 套件的说明里要求用户手动把 API 主机改成 `http://<本机IP>:11211`，因为打包进前端的
+默认值指向 EasyTier 的官方服务器 `config-server.easytier.cn`。
+
+本镜像在启动时会自动探测宿主机 IP 并加上 `--api-host`，让页面开箱即用、直接连到本容器。
+探测逻辑取默认路由的源地址(host 网络下即宿主机的局域网 IP)；如果探测结果不对(bridge 网络、
+反向代理、多网卡等场景)，显式设置 `API_HOST` 即可，或设 `AUTO_API_HOST=0` 关闭自动探测。
 
 `easytier-core` 的绝大多数参数都支持 `ET_*` 形式的环境变量，例如
 `ET_NETWORK_NAME`、`ET_NETWORK_SECRET`、`ET_PEERS`、`ET_HOSTNAME` 等，

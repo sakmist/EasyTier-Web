@@ -40,6 +40,7 @@ VOLUME ["/data"]
 ENV DATA_DIR=/data \
     CONFIG_SERVER_PORT=22020 \
     NO_TUN=0 \
+    AUTO_API_HOST=1 \
     TZ=Asia/Shanghai
 
 # 11211 web dashboard/API, 22020 config server (loopback), 11010/11011 EasyTier listeners.

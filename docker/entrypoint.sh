@@ -55,16 +55,37 @@ is_true() {
     esac
 }
 
+# --- resolve the API host the browser should talk to.
+# The bundled frontend defaults to the public config-server.easytier.cn, which
+# would send logins to EasyTier's official service instead of this container.
+# With host networking we can guess the LAN address the browser will use; set
+# API_HOST explicitly (or AUTO_API_HOST=0) when that guess is wrong, e.g. in
+# bridge mode or behind a reverse proxy.
+if [ -z "${API_HOST:-}" ] && is_true "${AUTO_API_HOST:-1}"; then
+    detected_ip="$(ip route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' | head -n1)"
+    if [ -z "${detected_ip}" ]; then
+        detected_ip="$(hostname -I 2>/dev/null | tr ' ' '\n' | grep -vE '^(127\.|::1)?$' | head -n1)"
+    fi
+    if [ -n "${detected_ip}" ]; then
+        API_HOST="http://${detected_ip}:${UIPORT_RESOLVED}"
+        log "auto-detected API host for the dashboard: ${API_HOST}"
+    fi
+fi
+
 # --- 1. web dashboard / REST API / config server
 log "starting easytier-web-embed (web+api port=${UIPORT_RESOLVED}, config server=${CONFIG_SERVER_PROTOCOL}://0.0.0.0:${CONFIG_SERVER_PORT}, db=${DB_FILE})"
+WEB_ARGS=(
+    --db "${DB_FILE}"
+    --api-server-port "${UIPORT_RESOLVED}"
+    --config-server-port "${CONFIG_SERVER_PORT}"
+    --config-server-protocol "${CONFIG_SERVER_PROTOCOL}"
+    --file-log-dir "${LOG_DIR}"
+)
+if [ -n "${API_HOST:-}" ]; then
+    WEB_ARGS+=(--api-host "${API_HOST}")
+fi
 # shellcheck disable=SC2086
-"${SERVER_DIR}/easytier-web-embed" \
-    --db "${DB_FILE}" \
-    --api-server-port "${UIPORT_RESOLVED}" \
-    --config-server-port "${CONFIG_SERVER_PORT}" \
-    --config-server-protocol "${CONFIG_SERVER_PROTOCOL}" \
-    --file-log-dir "${LOG_DIR}" \
-    ${ET_WEB_EXTRA_ARGS} &
+"${SERVER_DIR}/easytier-web-embed" "${WEB_ARGS[@]}" ${ET_WEB_EXTRA_ARGS} &
 WEB_PID=$!
 
 # --- 2. wait for the config server to accept connections before starting core
